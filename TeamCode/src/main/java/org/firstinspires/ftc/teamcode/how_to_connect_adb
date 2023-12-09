@@ -1,0 +1,2 @@
+set PATH=%PATH%;%LOCALAPPDATA%\Android\Sdk\platform-tools
+adb connect 192.168.43.1
