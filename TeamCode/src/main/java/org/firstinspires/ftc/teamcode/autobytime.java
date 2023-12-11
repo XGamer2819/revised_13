@@ -29,12 +29,20 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import android.graphics.Color;
+
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
+
+
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -64,72 +72,179 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="ftc23244", group="Linear OpMode")
+@Autonomous(name="autobytime", group="Linear OpMode")
 
-public class FTC23244 extends LinearOpMode {
+public class autobytime extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
-    private ElapsedTime runtime = new ElapsedTime();
+
     private DcMotor leftFrontDrive;
     private DcMotor leftBackDrive;
     private DcMotor rightFrontDrive;
     private DcMotor rightBackDrive;
     private Camera cameraDetection = new Camera();
+
+    private DcMotor WheelRoller;
+
     static String Forward = "Forward";
     static String Backward = "Backward";
     static String Left = "Left";
     static String Right = "Right";
-    //init motors
+    private DcMotor Slide;
+    private Servo SlideServo;
+
+    //init motors, servo, camera and color sensor
     private void initDcMotors() {
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "m4");
         leftBackDrive  = hardwareMap.get(DcMotor.class, "m3");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "m1");
         rightBackDrive = hardwareMap.get(DcMotor.class, "m2");
+        Slide = hardwareMap.get(DcMotor.class, "Slide");
+        SlideServo = hardwareMap.get(Servo.class, "Outake");
+        WheelRoller = hardwareMap.get(DcMotor.class, "Wheel Roller");
     }
 
-    private void drive(String direction, double runtimeInseconds, double leftFrontPower, double rightFrontPower, double leftBackPower, double rightBackPower) {
+    //stop drive
+    private void driveStop()
+    {
+        leftFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        rightBackDrive.setPower(0);
+    }
+
+
+
+        //drive till the color line detected.
+
+
+
+
+    private void drive(String direction, double runtimeInseconds,
+                       double leftFrontPower, double rightFrontPower,
+                       double leftBackPower, double rightBackPower) {
         ElapsedTime runtime = new ElapsedTime();
-        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        if (direction == Forward) {
+        leftFrontDrive.setDirection(Direction.REVERSE);
+        leftBackDrive.setDirection(Direction.REVERSE);
+        rightFrontDrive.setDirection(Direction.FORWARD);
+        rightBackDrive.setDirection(Direction.REVERSE);
+        runtime.reset();
+        if (direction == "Forward") {
             leftFrontDrive.setPower(leftFrontPower);
             leftBackDrive.setPower(leftBackPower);
             rightFrontDrive.setPower(rightFrontPower);
             rightBackDrive.setPower(rightBackPower);
+
         }
-        if (direction == Backward) {
+        if (direction == "Backward") {
+            leftFrontDrive.setPower(-leftFrontPower);
+            leftBackDrive.setPower(-leftBackPower);
+            rightFrontDrive.setPower(-rightFrontPower);
+            rightBackDrive.setPower(-rightBackPower);
+
+        }
+        if (direction == "Left") {
+            leftFrontDrive.setPower(-leftFrontPower);
+            leftBackDrive.setPower(leftBackPower);
+            rightFrontDrive.setPower(rightFrontPower);
+            rightBackDrive.setPower(-rightBackPower);
+
+        }
+        if (direction == "Right") {
+            leftFrontDrive.setPower(leftFrontPower);
+            leftBackDrive.setPower(-leftBackPower);
+            rightFrontDrive.setPower(-rightFrontPower);
+            rightBackDrive.setPower(rightBackPower);
+        }
+        if (direction == "TurnRight") {
             leftFrontDrive.setPower(leftFrontPower);
             leftBackDrive.setPower(leftBackPower);
+            rightFrontDrive.setPower(-rightFrontPower);
+            rightBackDrive.setPower(-rightBackPower);
+        }
+        if (direction == "TurnLeft") {
+            leftFrontDrive.setPower(-leftFrontPower);
+            leftBackDrive.setPower(-leftBackPower);
             rightFrontDrive.setPower(rightFrontPower);
             rightBackDrive.setPower(rightBackPower);
         }
-        if (direction == Left) {
-            leftFrontDrive.setPower(leftFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            rightBackDrive.setPower(rightBackPower);
+
+        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
+            telemetry.addData("Time", runtimeInseconds);
+            telemetry.update();
+
         }
-        if (direction == Right) {
-            leftFrontDrive.setPower(leftFrontPower);
-            leftBackDrive.setPower(leftBackPower);
-            rightFrontDrive.setPower(rightFrontPower);
-            rightBackDrive.setPower(rightBackPower);
+    }
+
+    private void Slide(String direction, double SlidePower, double runtimeInseconds) {
+        ElapsedTime runtime = new ElapsedTime();
+        if (direction == "Up") {
+        Slide.setPower(SlidePower);
         }
-        while (opModeIsActive() &&(runtime.seconds() < runtimeInseconds)) {
+        if (direction == "Down") {
+        Slide.setPower(-SlidePower);
+        }
+        if (direction == "stop") {
+            Slide.setPower(SlidePower);
+        }
+        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
+            telemetry.addData("Time", runtimeInseconds);
             telemetry.update();
         }
     }
+    private void Servo(String direction) {
+        if (direction == "Drop") {
+            SlideServo.setPosition(-0.3);
+        }
+        if (direction == "Reset") {
+            SlideServo.setPosition(0);
+        }
+    }
+    private void WheelRoller(double runtimeInseconds) {
+        ElapsedTime runtime = new ElapsedTime();
+        WheelRoller.setPower(-0.5);
+        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
+            telemetry.addData("Time", runtimeInseconds);
+            telemetry.update();
+        }
+    }
+    private void Stop(double runtimeInseconds) {
+        ElapsedTime runtime = new ElapsedTime();
+        leftFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        rightBackDrive.setPower(0);
+        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
+            telemetry.addData("Time", runtimeInseconds);
+            telemetry.update();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     @Override
     public void runOpMode() {
         initDcMotors();
         // detect team prom position
-        //Camera.detect();
+        // Camera.detect();
 
         //  move the robotic to the position
-        drive("Forward", 1.0, 0.5, 0.5, 0.5, 0.5);
-        drive("Backward", 1.0, -0.5, -0.5, -0.5, -0.5);
+
 
         // drop th e pixel on the line
         //DropPixel.Drop()
@@ -157,10 +272,26 @@ public class FTC23244 extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        runtime.reset();
+
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-
+        if (opModeIsActive()) {
+            drive("Forward", 1.05, 0.5, 0.5, 0.5, 0.5);
+            Stop(0.5);
+            WheelRoller(0.25);
+            drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
+            drive("TurnLeft", 0.875, 0.5, 0.5, 0.5, 0.5);
+            Stop(0.1);
+            drive("Backward", 1.0, 0.5, 0.5, 0.5, 0.5);
+            Stop(0.5);
+            Slide("Up", 0.5, 1.0);
+            Slide("Stop", 0, 1.0);
+            Servo("Drop");
+            sleep(1000);
+            Servo("Reset");
+            Slide("Down", 0.5, 1.0);
+            drive("Forward", 1.0, 0, 0, 0, 0);
+            drive("Left", 1.65, 0.5, 0.5, 0.5, 0.5);
+            drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
         }
     }}
