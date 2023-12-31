@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -47,10 +48,9 @@ import java.util.List;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
+@Autonomous(name = "Camera", group = "Linear OpMode")
 
 public class Camera extends LinearOpMode {
-
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
@@ -58,7 +58,8 @@ public class Camera extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "MyModelStoredAsAsset.tflite";
     // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
     // this is used when uploading models directly to the RC using the model upload interface.
-    private static final String TFOD_MODEL_FILE = "/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/rednearbackdrop.tflite";
+    //private static final String TFOD_MODEL_FILE = "//TeamCode//src//main//java//org//firstinspires//ftc//teamcode//rednearbackdrop.tflite";
+    private static final String TFOD_MODEL_FILE = "rednearbackdrop.tflite";
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
        "Red Left",
@@ -66,17 +67,20 @@ public class Camera extends LinearOpMode {
        "Red Right"
     };
 
+
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
      */
-    private TfodProcessor tfod;
+    public static TfodProcessor tfod;
+
 
     /**
      * The variable to store our instance of the vision portal.
      */
     private VisionPortal visionPortal;
-    public static String detect() {
-        return "Red Center";
+    public String detect() {
+
+        return "Red Middle";
     }
     @Override
     public void runOpMode() {
@@ -117,7 +121,7 @@ public class Camera extends LinearOpMode {
     /**
      * Initialize the TensorFlow Object Detection processor.
      */
-    private void initTfod() {
+    public void initTfod() {
 
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
@@ -181,7 +185,7 @@ public class Camera extends LinearOpMode {
     /**
      * Add telemetry about TensorFlow Object Detection (TFOD) recognitions.
      */
-    private void telemetryTfod() {
+    public String telemetryTfod() {
 
         List<Recognition> currentRecognitions = tfod.getRecognitions();
         telemetry.addData("# Objects Detected", currentRecognitions.size());
@@ -195,8 +199,10 @@ public class Camera extends LinearOpMode {
             telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+            return recognition.getLabel();
         }   // end for() loop
 
+        return null;
     }   // end method telemetryTfod()
 
 }   // end class

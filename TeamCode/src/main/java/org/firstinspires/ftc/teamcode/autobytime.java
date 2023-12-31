@@ -90,8 +90,7 @@ public class autobytime extends LinearOpMode {
     static String Backward = "Backward";
     static String Left = "Left";
     static String Right = "Right";
-    private DcMotor Slide;
-    private Servo SlideServo;
+
 
     //init motors, servo, camera and color sensor
     private void initDcMotors() {
@@ -99,8 +98,7 @@ public class autobytime extends LinearOpMode {
         leftBackDrive  = hardwareMap.get(DcMotor.class, "m3");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "m1");
         rightBackDrive = hardwareMap.get(DcMotor.class, "m2");
-        Slide = hardwareMap.get(DcMotor.class, "Slide");
-        SlideServo = hardwareMap.get(Servo.class, "Outake");
+
         WheelRoller = hardwareMap.get(DcMotor.class, "Wheel Roller");
     }
 
@@ -176,30 +174,8 @@ public class autobytime extends LinearOpMode {
         }
     }
 
-    private void Slide(String direction, double SlidePower, double runtimeInseconds) {
-        ElapsedTime runtime = new ElapsedTime();
-        if (direction == "Up") {
-        Slide.setPower(SlidePower);
-        }
-        if (direction == "Down") {
-        Slide.setPower(-SlidePower);
-        }
-        if (direction == "stop") {
-            Slide.setPower(SlidePower);
-        }
-        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
-            telemetry.addData("Time", runtimeInseconds);
-            telemetry.update();
-        }
-    }
-    private void Servo(String direction) {
-        if (direction == "Drop") {
-            SlideServo.setPosition(-0.3);
-        }
-        if (direction == "Reset") {
-            SlideServo.setPosition(0);
-        }
-    }
+
+
     private void WheelRoller(double runtimeInseconds) {
         ElapsedTime runtime = new ElapsedTime();
         WheelRoller.setPower(-0.5);
@@ -276,22 +252,16 @@ public class autobytime extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            drive("Forward", 1.05, 0.5, 0.5, 0.5, 0.5);
+            drive("Forward", 1.1, 0.5, 0.5, 0.5, 0.5);
             Stop(0.5);
-            WheelRoller(0.25);
+            //WheelRoller(0.25);
             drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
             drive("TurnLeft", 0.875, 0.5, 0.5, 0.5, 0.5);
             Stop(0.1);
             drive("Backward", 1.0, 0.5, 0.5, 0.5, 0.5);
             Stop(0.5);
-            Slide("Up", 0.5, 1.0);
-            Slide("Stop", 0, 1.0);
-            Servo("Drop");
-            sleep(1000);
-            Servo("Reset");
-            Slide("Down", 0.5, 1.0);
             drive("Forward", 1.0, 0, 0, 0, 0);
-            drive("Left", 1.65, 0.5, 0.5, 0.5, 0.5);
-            drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
+            drive("Left", 1.5, 0.5, 0.5, 0.5, 0.5);
+            drive("Backward", 1.0, 0.5, 0.5, 0.5, 0.5);
         }
     }}

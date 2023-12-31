@@ -36,40 +36,22 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.tfod.TfodProcessor;
+
+import java.util.List;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
 
-/*
- * This file contains an example of a Linear "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When a selection is made from the menu, the corresponding OpMode is executed.
- *
- * This particular OpMode illustrates driving a 4-motor Omni-Directional (or Holonomic) robot.
- * This code will work with either a Mecanum-Drive or an X-Drive train.
- * Both of these drives are illustrated at https://gm0.org/en/latest/docs/robot-design/drivetrains/holonomic.html
- * Note that a Mecanum drive must display an X roller-pattern when viewed from above.
- *
- * Also note that it is critical to set the correct rotation direction for each motor.  See details below.
- *
- * Holonomic drives provide the ability for the robot to move in three axes (directions) simultaneously.
- * Each motion axis is controlled by one Joystick axis.
- *
- * 1) Axial:    Driving forward and backward               Left-joystick Forward/Backward
- * 2) Lateral:  Strafing right and left                     Left-joystick Right and Left
- * 3) Yaw:      Rotating Clockwise and counter clockwise    Right-joystick Right and Left
- *
- * This code is written assuming that the right-side motors need to be reversed for the robot to drive forward.
- * When you first test your robot, if it moves backward when you push the left stick forward, then you must flip
- * the direction of all 4 motors (see code below).
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
 
 @Autonomous(name="colorauto", group="Linear OpMode")
 
@@ -85,12 +67,16 @@ public class colorauto extends LinearOpMode {
 
     private ColorSensor colorSensor;
 
-    static String Forward = "Forward";
-    static String Backward = "Backward";
-    static String Left = "Left";
-    static String Right = "Right";
-    private DcMotor Slide;
-    private Servo SlideServo;
+    String Color_String;
+    int CurrentColor;
+
+
+
+
+
+
+
+
 
     //init motors, servo, camera and color sensor
     private void initDcMotors() {
@@ -98,9 +84,13 @@ public class colorauto extends LinearOpMode {
         leftBackDrive  = hardwareMap.get(DcMotor.class, "m3");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "m1");
         rightBackDrive = hardwareMap.get(DcMotor.class, "m2");
-        Slide = hardwareMap.get(DcMotor.class, "Slide");
-        SlideServo = hardwareMap.get(Servo.class, "Outake");
         colorSensor = hardwareMap.get(ColorSensor.class, "Color Sensor");
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+
+
     }
 
     //stop drive
@@ -119,7 +109,7 @@ public class colorauto extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         runtime.reset();
         if (direction == "Forward") {
             leftFrontDrive.setPower(leftFrontPower);
@@ -162,12 +152,9 @@ public class colorauto extends LinearOpMode {
         }
 
         //drive till the color line detected.
-
-
         while (opModeIsActive()) {
             // Put loop blocks here.
-            int  currentColor = Color.rgb(colorSensor.red(), colorSensor.green(), colorSensor.blue());
-            if (JavaUtil.colorToSaturation(currentColor) >= 0.6 && JavaUtil.colorToHue(currentColor) > 210 && JavaUtil.colorToHue(currentColor) < 275) {
+            if (JavaUtil.colorToSaturation(CurrentColor) >= 0.85 && JavaUtil.colorToHue(CurrentColor) > 330 && JavaUtil.colorToHue(CurrentColor) < 360) {
                 driveStop();
                 colorSensor.enableLed(false);
             }
@@ -184,7 +171,7 @@ public class colorauto extends LinearOpMode {
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
         runtime.reset();
         if (direction == "Forward") {
             leftFrontDrive.setPower(leftFrontPower);
@@ -233,23 +220,22 @@ public class colorauto extends LinearOpMode {
         }
     }
 
-    private void Slide(String direction, double SlidePower, double runtimeInseconds) {
-        ElapsedTime runtime = new ElapsedTime();
-        if (direction == "Up") {
-        Slide.setPower(SlidePower);
-        }
-        if (direction == "Down") {
-        Slide.setPower(-SlidePower);
-        }
-        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
-            telemetry.addData("Time", runtimeInseconds);
-            telemetry.update();
-        }
+
+    private void Post_Color_Info() {
+        CurrentColor = Color.rgb(colorSensor.red(), colorSensor.green(), colorSensor.blue());
+        telemetry.addData("Distance", ((DistanceSensor) colorSensor).getDistance(DistanceUnit.CM));
+        telemetry.addData("Color Hue", JavaUtil.colorToHue(CurrentColor));
+        telemetry.addData("Color Saturation", JavaUtil.colorToSaturation(CurrentColor));
+        telemetry.addData("Detected", Color_String);
+        telemetry.update();
     }
 
+
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         initDcMotors();
+
+
         // detect team prom position
         // Camera.detect();
 
@@ -286,13 +272,30 @@ public class colorauto extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
-            //drive("Forward", 1.0, 0.5, 0.5, 0.5, 0.5);
-            //drive("TurnLeft", 0.88, 0.5, 0.5, 0.5, 0.5);
-            //drive("Backward", 1.25, 0.5, 0.5, 0.5, 0.5);
-            //Slide("Up", 0.5, 1.0);
-            //drive("Forward", 1.0, 0, 0, 0, 0);
-            //drive("Left", 1.65, 0.5, 0.5, 0.5, 0.5);
-            //drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
-            drive("Forward", "Blue", 0.3, 0.3, 0.3, 0.3);
+
+            telemetry.addData("redteamprop", cameraDetection.detect());
+            telemetry.update();
+            leftFrontDrive.setPower(0.3);
+            rightFrontDrive.setPower(0.3);
+            leftBackDrive.setPower(0.3);
+            rightBackDrive.setPower(0.3);
+           while (opModeIsActive() && !isStopRequested()) {
+
+               if (colorSensor.red() > 680) {
+                   driveStop();
+               }
+
+
+               //Post_Color_Info();
+                //if (JavaUtil.colorToSaturation(CurrentColor) >= 0.9 && JavaUtil.colorToHue(CurrentColor) > 330 && JavaUtil.colorToHue(CurrentColor) < 360) {
+                //    driveStop();
+                //    colorSensor.enableLed(false);
+               telemetry.addData("Red", colorSensor.red());
+               telemetry.addData("Blue", colorSensor.green());
+               telemetry.addData("Green", colorSensor.blue());
+               telemetry.update();
+
+                }
+                //telemetry.update();
         }
     }}
