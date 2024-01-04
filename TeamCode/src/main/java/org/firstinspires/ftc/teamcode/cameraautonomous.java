@@ -35,8 +35,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
@@ -60,6 +62,9 @@ public class cameraautonomous extends LinearOpMode {
     private DcMotor rightFrontDrive;
     private DcMotor rightBackDrive;
     private DcMotor WheelRoller;
+    private Servo Hanger;
+    private DcMotor Slide;
+    private Servo SlideServo;
 
 private static int CenterRed = 900;
 private static int RightRed = 900;
@@ -100,10 +105,12 @@ private static int RightRed = 900;
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         WheelRoller = hardwareMap.get(DcMotor.class, "Wheel Roller");
-
-
+        Hanger = hardwareMap.get(Servo.class, "Hanger");
+        Slide = hardwareMap.get(DcMotor.class, "Slide");
+        Slide.setDirection(DcMotor.Direction.REVERSE);
+        SlideServo = hardwareMap.get(Servo.class, "SlideServo");
     }
 
 
@@ -208,7 +215,7 @@ private static int RightRed = 900;
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
         runtime.reset();
         if (direction == "Forward") {
             leftFrontDrive.setPower(leftFrontPower);
@@ -264,6 +271,16 @@ private static int RightRed = 900;
             telemetry.update();
 
         }
+    }
+
+
+    private void Slide(double power, double runtimeInseconds) {
+        ElapsedTime runtime = new ElapsedTime();
+        Slide.setPower(-power);
+        while (opModeIsActive() && (runtime.seconds() < runtimeInseconds)) {
+            telemetry.update();
+        }
+        Slide.setPower(0);
     }
     boolean cameraDetected = false;
     String label = "";
@@ -358,7 +375,9 @@ private static int RightRed = 900;
 
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
+            Hanger.setPosition(0);
             while (opModeIsActive()) {
+                Hanger.setPosition(gamepad2.left_stick_x);
                 telemetry.addData("Red-------", colorSensor.red());
                 telemetry.update();
                 if (label == "Red Right" && (preRedflag == false)) {
@@ -370,9 +389,9 @@ private static int RightRed = 900;
 
                 if ((colorSensor.red() > CenterRed) || (colorSensor.red() > RightRed && label == "Red Right")) {
                     driveStop();
-                    drive("Backward", 0.2, 0.5, 0.5, 0.5, 0.5);
-                    drive("Forward", 1.0, 0, 0, 0, 0);
+                    drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
                     pixeldrop(0.5, 0.2);
+                    drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = true;
                 }
@@ -401,8 +420,13 @@ private static int RightRed = 900;
 
                     drive("Backward", 0.25, 0.5, 0.5, 0.5, 0.5);
                     drive("TurnLeft", 0.8, 0.5, 0.5, 0.5, 0.5);
-                    drive("Backward", 2.0, 0.3, 0.3, 0.3, 0.3);
-                    drive("Left", 1.5, 0.5, 0.5 ,0.5, 0.5);
+                    drive("Backward", 1.85, 0.3, 0.3, 0.3, 0.3);
+                    driveStop();
+                    Slide(0.5, 2.0);
+                    SlideServo.setPosition(0.3);
+                    sleep(2000);
+                    Slide(-0.5, 1.5);
+                    drive("Left", 1.45, 0.5, 0.5 ,0.5, 0.5);
                     drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = false;
