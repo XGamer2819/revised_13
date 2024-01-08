@@ -389,9 +389,9 @@ private static int RightRed = 900;
 
                 if ((colorSensor.red() > CenterRed) || (colorSensor.red() > RightRed && label == "Red Right")) {
                     driveStop();
-                    drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 0.025, 0.5, 0.5, 0.5, 0.5);
                     pixeldrop(0.5, 0.2);
-                    drive("Backward", 0.1, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 0.025, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = true;
                 }
@@ -418,15 +418,16 @@ private static int RightRed = 900;
                 }
                 if (label == "Red Middle" && startdriveflag) {
 
-                    drive("Backward", 0.25, 0.5, 0.5, 0.5, 0.5);
-                    drive("TurnLeft", 0.8, 0.5, 0.5, 0.5, 0.5);
-                    drive("Backward", 1.85, 0.3, 0.3, 0.3, 0.3);
+                    drive("Backward", 0.05, 0.5, 0.5, 0.5, 0.5);
+                    drive("TurnLeft", 0.725, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 2.425, 0.3, 0.3, 0.3, 0.3);
                     driveStop();
-                    Slide(0.5, 2.0);
-                    SlideServo.setPosition(0.3);
+                    Slide(0.5, 1.45);
+                    SlideServo.setPosition(0.4);
                     sleep(2000);
-                    Slide(-0.5, 1.5);
-                    drive("Left", 1.45, 0.5, 0.5 ,0.5, 0.5);
+                    SlideServo.setPosition(0);
+                    Slide(-0.5, 1.45);
+                    drive("Left", 1.15, 0.5, 0.5 ,0.5, 0.5);
                     drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = false;
