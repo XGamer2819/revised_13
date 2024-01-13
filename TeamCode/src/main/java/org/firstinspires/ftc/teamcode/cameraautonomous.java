@@ -65,9 +65,10 @@ public class cameraautonomous extends LinearOpMode {
     private Servo Hanger;
     private DcMotor Slide;
     private Servo SlideServo;
+    int nothingcounter = 0;
 
-private static int CenterRed = 900;
-private static int RightRed = 900;
+private static int CenterRed = 825;
+private static int RightRed = 825;
     private ColorSensor colorSensor;
 
     String Color_String;
@@ -179,7 +180,10 @@ private static int RightRed = 900;
 
         List<Recognition> currentRecognitions = tfod.getRecognitions();
         telemetry.addData("# Objects Detected", currentRecognitions.size());
-
+        nothingcounter++;
+        if (nothingcounter > 300) {
+            return "Red Left";
+        }
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
             double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
@@ -190,6 +194,7 @@ private static int RightRed = 900;
             telemetry.addData("- Position", "%.0f / %.0f", x, y);
             telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
             telemetry.addData("red", colorSensor.red());
+
             return recognition.getLabel();
         }   // end for() loop
         return "nothing";
@@ -271,6 +276,7 @@ private static int RightRed = 900;
             telemetry.update();
 
         }
+        WheelRoller.setPower(0);
     }
 
 
@@ -283,6 +289,7 @@ private static int RightRed = 900;
         Slide.setPower(0);
     }
     boolean cameraDetected = false;
+    boolean ihateleft = false;
     String label = "";
     private void motordrive() {
         if (cameraDetected == false) {
@@ -303,14 +310,15 @@ private static int RightRed = 900;
         }
         if (label == "Red Left") {
             cameraDetected = true;
-            drive("Forward", 2.25, 0.3, 0.3, 0.3, 0.3);
-            drive("TurnLeft", 0.825, 0.5, 0.5, 0.5, 0.5);
-            leftFrontDrive.setPower(0.3);
-            rightFrontDrive.setPower(0.3);
-            leftBackDrive.setPower(0.3);
-            rightBackDrive.setPower(0.3);
+            drive("Forward", 2.05, 0.3, 0.3, 0.3, 0.3);
+            drive("TurnLeft", 0.72, 0.5, 0.5, 0.5, 0.5);
+            drive("Forward", 0.2, 0.3, 0.3, 0.3, 0.3);
+            driveStop();
+            pixeldrop(0.5,0.5);
+            sleep(2000);
             telemetry.addData("Red", colorSensor.red());
             telemetry.update();
+            ihateleft = true;
         }
         if (label == "Red Right") {
             cameraDetected = true;
@@ -373,6 +381,7 @@ private static int RightRed = 900;
         boolean startdriveflag = false;
         boolean preRedflag = false;
 
+
         // run until the end of the match (driver presses STOP)
         if (opModeIsActive()) {
             Hanger.setPosition(0);
@@ -386,8 +395,10 @@ private static int RightRed = 900;
                     preRedflag = true;
                 }
                 motordrive();
+                telemetry.addData("counter:", nothingcounter);
+                telemetry.update();
 
-                if ((colorSensor.red() > CenterRed) || (colorSensor.red() > RightRed && label == "Red Right")) {
+                if ((colorSensor.red() > CenterRed && label == "Red Middle") || (colorSensor.red() > RightRed && label == "Red Right")) {
                     driveStop();
                     drive("Backward", 0.025, 0.5, 0.5, 0.5, 0.5);
                     pixeldrop(0.5, 0.2);
@@ -399,26 +410,42 @@ private static int RightRed = 900;
                 if (label == "Red Right" && startdriveflag) {
                     drive("Backward", 0.2, 0.2, 0.2, 0.2, 0.2);
                     drive("TurnLeft", 0.825, 0.5, 0.5, 0.5, 0.5);
-                    drive("Backward", 0.5, 0.3, 0.3, 0.3, 0.3);
-                    drive("TurnLeft", 0.825, 0.5, 0.5, 0.5, 0.5);
-                    drive("Backward", 1.5, 0.3, 0.3, 0.3, 0.3);
+                    drive("Backward", 1.0, 0.3, 0.3, 0.3, 0.3);
+                    drive("TurnLeft", 0.725, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 1.75, 0.3, 0.3, 0.3, 0.3);
+                    drive("Right", 0.5, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 0.745, 0.3, 0.3, 0.3, 0.3);
+                    driveStop();
+                    Slide(0.5, 1.45);
+                    SlideServo.setPosition(0.4);
+                    sleep(2000);
+                    SlideServo.setPosition(0);
+                    Slide(-0.5, 1.45);
                     drive("Left", 1.1, 0.5, 0.5 ,0.5, 0.5);
                     drive("Backward", 0.75, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = false;
                     break;
                 }//drop paxel
-                if (label == "Red Left" && startdriveflag) {
-                drive("Backward", 2.5, 0.3, 0.3, 0.3, 0.3);
-                    drive("Left", 1.35, 0.5, 0.5 ,0.5, 0.5);
-                    drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
+                if (label == "Red Left" && ihateleft == true) {
+                drive("Backward", 1.34, 0.3, 0.3, 0.3, 0.3);
+                drive("Right", 0.7, 0.5, 0.5, 0.5, 0.5);
+                drive("Backward", 1.3, 0.3, 0.3, 0.3, 0.3);
+                driveStop();
+                Slide(0.5, 1.45);
+                SlideServo.setPosition(0.4);
+                sleep(2000);
+                SlideServo.setPosition(0);
+                Slide(-0.5, 1.45);
+                drive("Left", 1.75, 0.5, 0.5 ,0.5, 0.5);
+                drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = false;
                     break;
                 }
                 if (label == "Red Middle" && startdriveflag) {
 
-                    drive("Backward", 0.05, 0.5, 0.5, 0.5, 0.5);
+                    drive("Backward", 0.045, 0.5, 0.5, 0.5, 0.5);
                     drive("TurnLeft", 0.725, 0.5, 0.5, 0.5, 0.5);
                     drive("Backward", 2.425, 0.3, 0.3, 0.3, 0.3);
                     driveStop();
@@ -427,7 +454,7 @@ private static int RightRed = 900;
                     sleep(2000);
                     SlideServo.setPosition(0);
                     Slide(-0.5, 1.45);
-                    drive("Left", 1.15, 0.5, 0.5 ,0.5, 0.5);
+                    drive("Left", 1.225, 0.5, 0.5 ,0.5, 0.5);
                     drive("Backward", 0.5, 0.5, 0.5, 0.5, 0.5);
                     driveStop();
                     startdriveflag = false;
